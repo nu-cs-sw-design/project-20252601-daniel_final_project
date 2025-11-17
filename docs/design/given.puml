@@ -1,5 +1,23 @@
 @startuml
 
+package ui {
+  class Main {
+    +{static} main(args : String[]) : void
+  }
+  
+  class GameUI {
+    -game : Game
+    -messages : ResourceBundle
+    +GameUI(game : Game)
+    +chooseLanguage() : void
+    +chooseGame() : void
+    +chooseNumberOfPlayers() : void
+    +startTurn() : void
+    +endGame() : void
+    +checkIfGameOver() : boolean
+  }
+}
+
 package domain.game {
   class Game {
     -numberOfPlayers : int
@@ -188,5 +206,11 @@ Player --> Card
 Player ..> Instantiator
 Card --> CardType
 CardType --> GameType
+Main ..> GameUI
+Main ..> Game
+Main ..> Instantiator
+Main ..> Deck
+Main ..> Player
+GameUI --> Game
 
 @enduml
