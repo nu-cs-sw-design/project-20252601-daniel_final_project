@@ -132,6 +132,61 @@ package domain.game {
     +getIsCursed() : boolean
     +setCursed(isCursed : boolean) : void
   }
+  
+  enum CardType {
+    NOPE
+    DEFUSE
+    ATTACK
+    SHUFFLE
+    SKIP
+    SEE_THE_FUTURE
+    CAT_ONE
+    CAT_TWO
+    CAT_THREE
+    CAT_FOUR
+    EXPLODING_KITTEN
+    STREAKING_KITTEN
+    SWAP_TOP_AND_BOTTOM
+    GARBAGE_COLLECTION
+    CURSE_OF_THE_CAT_BUTT
+    ALTER_THE_FUTURE
+    CATOMIC_BOMB
+    SUPER_SKIP
+    MARK
+    IMPLODING_KITTEN
+    REVERSE
+    FERAL_CAT
+    TARGETED_ATTACK
+    DRAW_FROM_THE_BOTTOM
+    -{final} gameType : GameType
+    CardType(gameType : GameType)
+  }
+  
+  enum GameType {
+    NONE
+    EXPLODING_KITTENS
+    STREAKING_KITTENS
+    IMPLODING_KITTENS
+  }
+  
+  class Instantiator {
+    +createCard(cardType : CardType) : Card
+    +createRandom() : Random
+    +createCardList() : ArrayList<Card>
+  }
 }
+
+Game --> Deck
+Game --> Player
+Game ..> Card
+Game ..> CardType
+Game --> GameType
+Deck --> Card
+Deck --> GameType
+Deck ..> Instantiator
+Player --> Card
+Player ..> Instantiator
+Card --> CardType
+CardType --> GameType
 
 @enduml
