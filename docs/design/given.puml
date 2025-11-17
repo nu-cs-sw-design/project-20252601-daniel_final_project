@@ -85,6 +85,53 @@ package domain.game {
     +setFacedUp() : void
     +checkIfFacedUp() : boolean
   }
+  
+  class Deck {
+    -deck : List<Card>
+    -rand : Random
+    -gameType : GameType
+    -numberOfPlayers : int
+    -maxDeckSize : int
+    -instantiator : Instantiator
+    +Deck(deck : List<Card>, rand : Random, gameType : GameType, numberOfPlayers : int, maxDeckSize : int, instantiator : Instantiator)
+    +getDeckSize() : int
+    +getCardAtIndex(index : int) : Card
+    +initializeDeck() : void
+    +shuffleDeck() : void
+    +insertCard(cardType : CardType, numberOfCards : int, bottom : boolean) : void
+    +drawCard() : Card
+    +drawCardFromBottom() : Card
+    +setNumberOfPlayers(numberOfPlayers : int) : void
+    +chooseGameType(gameType : GameType) : void
+    +removeBombs() : int
+    +insertExplodingKittenAtIndex(indexToInsert : int) : void
+    +insertImplodingKittenAtIndex(indexToInsert : int, card : Card) : void
+    +reorderDeckCards(newOrderIndices : int[], cardsToReorder : List<Card>) : void
+    #getCardTypeAtIndex(index : int) : CardType
+  }
+  
+  class Player {
+    -playerID : int
+    -hand : List<Card>
+    -isDead : boolean
+    -rand : Random
+    -isCursed : boolean
+    +Player(playerID : int, instantiator : Instantiator)
+    +getPlayerID() : int
+    +addDefuse(defuse : Card) : void
+    +addCardToHand(card : Card) : void
+    +hasCard(cardType : CardType) : boolean
+    +getHandSize() : int
+    +getCardAt(index : int) : Card
+    +getIndexOfCard(cardType : CardType) : int
+    +removeCardFromHand(index : int) : CardType
+    +shuffleHand() : void
+    +checkNumberOfCardsInHand(cardType : CardType) : int
+    +getIsDead() : boolean
+    +setIsDead() : void
+    +getIsCursed() : boolean
+    +setCursed(isCursed : boolean) : void
+  }
 }
 
 @enduml
