@@ -1,2 +1,288 @@
 @startuml
+
+package ui {
+  class Main {
+    +{static} main(args : String[]) : void
+  }
+  
+  class GameUI {
+    -game : Game
+    -messages : ResourceBundle
+    +GameUI(game : Game)
+    +chooseLanguage() : void
+    +chooseGame() : void
+    +chooseNumberOfPlayers() : void
+    +startTurn() : void
+    +endGame() : void
+    +checkIfGameOver() : boolean
+  }
+}
+
+package domain.game {
+  class Game {
+    -numberOfPlayers : int
+    -gameType : GameType
+    -deck : Deck
+    -players : Player[]
+    -turnManager : TurnManager
+    -playerManager : PlayerManager
+    -actionExecutor : ActionExecutor
+    +Game(numberOfPlayers : int, gameType : GameType, deck : Deck, players : Player[], turnManager : TurnManager, playerManager : PlayerManager, actionExecutor : ActionExecutor)
+    +getDeck() : Deck
+    +getPlayerAtIndex(playerIndex : int) : Player
+    +getNumberOfPlayers() : int
+    +getGameType() : GameType
+    +getTurnManager() : TurnManager
+    +getPlayerManager() : PlayerManager
+    +executeCardAction(action : CardAction, context : GameContext) : void
+  }
+  
+  class TurnManager {
+    -currentPlayerTurn : int
+    -currentPlayerNumberOfTurns : int
+    -isReversed : boolean
+    -attackQueue : List<Integer>
+    -attackCounter : int
+    -numberOfAttacks : int
+    -turnTracker : int[]
+    -attacked : boolean
+    +TurnManager(numberOfPlayers : int)
+    +getCurrentPlayerTurn() : int
+    +incrementPlayerTurn() : void
+    +decrementNumberOfTurns() : void
+    +getNumberOfTurns() : int
+    +setCurrentPlayerNumberOfTurns(numberOfTurns : int) : void
+    +startAttackPhase() : void
+    +playAttack() : void
+    +playTargetedAttack(playerIndex : int) : void
+    +getAttacked() : boolean
+    +getIsReversed() : boolean
+  }
+  
+  class PlayerManager {
+    -players : Player[]
+    -numberOfPlayers : int
+    +PlayerManager(players : Player[], numberOfPlayers : int)
+    +getPlayerAtIndex(playerIndex : int) : Player
+    +checkIfPlayerDead(playerIndex : int) : boolean
+    +checkIfPlayerHasCard(playerIndex : int, cardType : CardType) : boolean
+    +checkNumberOfAlivePlayers() : int
+    +getNumberOfPlayers() : int
+  }
+  
+  class ActionExecutor {
+    +execute(action : CardAction, context : GameContext) : ActionResult
+    +cancelAction(action : Cancellable) : void
+  }
+  
+  class Card {
+    -cardType : CardType
+    -isMarked : boolean
+    -isFacedUp : boolean
+    -action : CardAction
+    +Card(cardType : CardType, action : CardAction)
+    +getCardType() : CardType
+    +getAction() : CardAction
+    +play(context : GameContext) : ActionResult
+    +markCard() : void
+    +checkIfMarked() : boolean
+    +setFacedUp() : void
+    +checkIfFacedUp() : boolean
+  }
+  
+  class Deck {
+    -deck : List<Card>
+    -rand : Random
+    -gameType : GameType
+    -numberOfPlayers : int
+    -maxDeckSize : int
+    -cardFactory : CardFactory
+    +Deck(deck : List<Card>, rand : Random, gameType : GameType, numberOfPlayers : int, maxDeckSize : int, cardFactory : CardFactory)
+    +getDeckSize() : int
+    +getCardAtIndex(index : int) : Card
+    +initializeDeck() : void
+    +shuffleDeck() : void
+    +insertCard(cardType : CardType, numberOfCards : int, bottom : boolean) : void
+    +drawCard() : Card
+    +drawCardFromBottom() : Card
+    +setNumberOfPlayers(numberOfPlayers : int) : void
+    +chooseGameType(gameType : GameType) : void
+    +removeBombs() : int
+    +insertExplodingKittenAtIndex(indexToInsert : int) : void
+    +reorderDeckCards(newOrderIndices : int[], cardsToReorder : List<Card>) : void
+  }
+  
+  class Player {
+    -playerID : int
+    -hand : List<Card>
+    -isDead : boolean
+    -rand : Random
+    -isCursed : boolean
+    +Player(playerID : int, instantiator : Instantiator)
+    +getPlayerID() : int
+    +addDefuse(defuse : Card) : void
+    +addCardToHand(card : Card) : void
+    +hasCard(cardType : CardType) : boolean
+    +getHandSize() : int
+    +getCardAt(index : int) : Card
+    +getIndexOfCard(cardType : CardType) : int
+    +removeCardFromHand(index : int) : CardType
+    +shuffleHand() : void
+    +checkNumberOfCardsInHand(cardType : CardType) : int
+    +getIsDead() : boolean
+    +setIsDead() : void
+    +getIsCursed() : boolean
+    +setCursed(isCursed : boolean) : void
+  }
+  
+  enum CardType {
+    NOPE
+    DEFUSE
+    ATTACK
+    SHUFFLE
+    SKIP
+    SEE_THE_FUTURE
+    CAT_ONE
+    CAT_TWO
+    CAT_THREE
+    CAT_FOUR
+    EXPLODING_KITTEN
+    STREAKING_KITTEN
+    SWAP_TOP_AND_BOTTOM
+    GARBAGE_COLLECTION
+    CURSE_OF_THE_CAT_BUTT
+    ALTER_THE_FUTURE
+    CATOMIC_BOMB
+    SUPER_SKIP
+    MARK
+    IMPLODING_KITTEN
+    REVERSE
+    FERAL_CAT
+    TARGETED_ATTACK
+    DRAW_FROM_THE_BOTTOM
+    -{final} gameType : GameType
+    CardType(gameType : GameType)
+  }
+  
+  enum GameType {
+    NONE
+    EXPLODING_KITTENS
+    STREAKING_KITTENS
+    IMPLODING_KITTENS
+  }
+  
+  class Instantiator {
+    +createCard(cardType : CardType) : Card
+    +createRandom() : Random
+    +createCardList() : ArrayList<Card>
+  }
+  
+  class CardFactory {
+    +createCard(cardType : CardType) : Card
+    +createCardWithAction(cardType : CardType) : Card
+  }
+  
+  class GameContext {
+    -game : Game
+    -currentPlayer : Player
+    -deck : Deck
+    -turnManager : TurnManager
+    -playerManager : PlayerManager
+    +GameContext(game : Game, currentPlayer : Player, deck : Deck, turnManager : TurnManager, playerManager : PlayerManager)
+    +getGame() : Game
+    +getCurrentPlayer() : Player
+    +getDeck() : Deck
+    +getTurnManager() : TurnManager
+    +getPlayerManager() : PlayerManager
+  }
+  
+  class ActionResult {
+    -success : boolean
+    -message : String
+    -cancelled : boolean
+    +ActionResult(success : boolean, message : String)
+    +isSuccess() : boolean
+    +getMessage() : String
+    +isCancelled() : boolean
+    +setCancelled(cancelled : boolean) : void
+  }
+  
+  interface CardAction {
+    +execute(context : GameContext) : ActionResult
+    +canExecute(context : GameContext) : boolean
+    +getCardType() : CardType
+  }
+  
+  interface Cancellable {
+    +cancel() : void
+    +isCancelled() : boolean
+  }
+  
+  class ExplodingKittenAction {
+    -cancelled : boolean
+    +execute(context : GameContext) : ActionResult
+    +canExecute(context : GameContext) : boolean
+    +getCardType() : CardType
+  }
+  
+  class DefuseAction {
+    -cancelled : boolean
+    +execute(context : GameContext) : ActionResult
+    +canExecute(context : GameContext) : boolean
+    +getCardType() : CardType
+  }
+  
+  class ShuffleAction {
+    -cancelled : boolean
+    +execute(context : GameContext) : ActionResult
+    +canExecute(context : GameContext) : boolean
+    +getCardType() : CardType
+    +cancel() : void
+    +isCancelled() : boolean
+  }
+  
+  class NopeAction {
+    -targetAction : Cancellable
+    +NopeAction(targetAction : Cancellable)
+    +execute(context : GameContext) : ActionResult
+    +canExecute(context : GameContext) : boolean
+    +getCardType() : CardType
+    +setTargetAction(targetAction : Cancellable) : void
+  }
+}
+
+Game --> Deck
+Game --> Player
+Game --> TurnManager
+Game --> PlayerManager
+Game --> ActionExecutor
+TurnManager ..> PlayerManager
+ActionExecutor ..> CardAction
+ActionExecutor ..> GameContext
+Card --> CardType
+Card --> CardAction
+Deck --> Card
+Deck --> GameType
+Deck --> CardFactory
+Player --> Card
+CardFactory ..> CardAction
+CardFactory ..> Card
+GameContext --> Game
+GameContext --> Player
+GameContext --> Deck
+GameContext --> TurnManager
+GameContext --> PlayerManager
+ExplodingKittenAction ..|> CardAction
+DefuseAction ..|> CardAction
+ShuffleAction ..|> CardAction
+ShuffleAction ..|> Cancellable
+NopeAction ..|> CardAction
+NopeAction ..> Cancellable
+Main ..> GameUI
+Main ..> Game
+Main ..> Instantiator
+Main ..> Deck
+Main ..> Player
+GameUI --> Game
+
 @enduml
