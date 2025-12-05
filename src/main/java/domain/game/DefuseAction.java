@@ -2,40 +2,34 @@ package domain.game;
 
 public class DefuseAction implements CardAction {
     
-    private int insertIndex;
+    private int insertPosition;
     
     public DefuseAction() {
-        this.insertIndex = 0;
+        this.insertPosition = 0;
     }
     
-    public void setInsertIndex(int insertIndex) {
-        this.insertIndex = insertIndex;
+    public void setInsertPosition(int position) {
+        this.insertPosition = position;
     }
     
-    public int getInsertIndex() {
-        return insertIndex;
+    public int getInsertPosition() {
+        return insertPosition;
     }
 
     @Override
-    public ActionResult execute(GameContext context) {
-        Player currentPlayer = context.getCurrentPlayer();
+    public void execute(GameContext context) {
+        Player player = context.getCurrentPlayer();
         Deck deck = context.getDeck();
         
-        if (!currentPlayer.hasCard(CardType.DEFUSE)) {
-            return ActionResult.failure("Player does not have a Defuse card");
-        }
+        int defuseIdx = player.getIndexOfCard(CardType.DEFUSE);
+        player.removeCardFromHand(defuseIdx);
         
-        int defuseIdx = currentPlayer.getIndexOfCard(CardType.DEFUSE);
-        currentPlayer.removeCardFromHand(defuseIdx);
-        
-        deck.insertExplodingKittenAtIndex(insertIndex);
-        
-        return ActionResult.success("Defuse played - Exploding Kitten inserted back into deck");
+        deck.insertExplodingKittenAtIndex(insertPosition);
     }
 
     @Override
-    public boolean canExecute(GameContext context) {
-        return context.getCurrentPlayer().hasCard(CardType.DEFUSE);
+    public boolean isNopeable() {
+        return false;
     }
 
     @Override
@@ -43,4 +37,3 @@ public class DefuseAction implements CardAction {
         return CardType.DEFUSE;
     }
 }
-

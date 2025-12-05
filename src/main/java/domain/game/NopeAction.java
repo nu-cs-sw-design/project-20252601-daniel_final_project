@@ -1,38 +1,17 @@
 package domain.game;
 
 public class NopeAction implements CardAction {
-    
-    private Cancellable targetAction;
-    
-    public NopeAction() {
-        this.targetAction = null;
-    }
-    
-    public NopeAction(Cancellable targetAction) {
-        this.targetAction = targetAction;
-    }
-    
-    public void setTargetAction(Cancellable targetAction) {
-        this.targetAction = targetAction;
-    }
-    
-    public Cancellable getTargetAction() {
-        return targetAction;
+
+    @Override
+    public void execute(GameContext context) {
+        // Nope's effect is handled by PendingAction.addNope()
+        // This execute method is called but the actual cancellation
+        // logic is in PendingAction.isNoped() and resolve()
     }
 
     @Override
-    public ActionResult execute(GameContext context) {
-        if (targetAction == null) {
-            return ActionResult.failure("No target action to cancel");
-        }
-        
-        targetAction.cancel();
-        return ActionResult.success("Action cancelled by Nope");
-    }
-
-    @Override
-    public boolean canExecute(GameContext context) {
-        return targetAction != null && !targetAction.isCancelled();
+    public boolean isNopeable() {
+        return true;
     }
 
     @Override
@@ -40,4 +19,3 @@ public class NopeAction implements CardAction {
         return CardType.NOPE;
     }
 }
-

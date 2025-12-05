@@ -1,7 +1,7 @@
 package domain.game;
 
 public interface CardAction {
-    ActionResult execute(GameContext context);
-    boolean canExecute(GameContext context);
+    void execute(GameContext context);
+    boolean isNopeable();
     CardType getCardType();
 }
