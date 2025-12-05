@@ -1,288 +1,279 @@
 @startuml
 
-package ui {
+package controller {
   class Main {
     +{static} main(args : String[]) : void
   }
-  
+
+  class GameController {
+    -game : Game
+    -ui : GameUI
+    +GameController(game : Game, ui : GameUI)
+    +initialize() : void
+    +handleDrawCard() : void
+    +handlePlayCard(cardIndex : int) : void
+    +handleNopeResponse(wantsToNope : boolean) : void
+    +handleDefusePosition(position : int) : void
+    -processGameState() : void
+  }
+}
+
+package view {
+  interface GameObserver {
+    +onTurnStarted(playerIndex : int) : void
+    +onCardPlayed(playerIndex : int, cardType : CardType) : void
+    +onNopeWindowOpened(sourcePlayerIndex : int, cardType : CardType) : void
+    +onActionResolved(message : String) : void
+    +onActionCancelled() : void
+    +onExplosionTriggered(playerIndex : int) : void
+    +onDefuseUsed(playerIndex : int) : void
+    +onPlayerEliminated(playerIndex : int) : void
+    +onGameOver(winnerIndex : int) : void
+    +onError(message : String) : void
+  }
+
   class GameUI {
-    -game : Game
-    -messages : ResourceBundle
-    +GameUI(game : Game)
-    +chooseLanguage() : void
-    +chooseGame() : void
-    +chooseNumberOfPlayers() : void
-    +startTurn() : void
-    +endGame() : void
-    +checkIfGameOver() : boolean
+    -controller : GameController
+    +GameUI()
+    +setController(controller : GameController) : void
+    +onTurnStarted(playerIndex : int) : void
+    +onCardPlayed(playerIndex : int, cardType : CardType) : void
+    +onNopeWindowOpened(sourcePlayerIndex : int, cardType : CardType) : void
+    +onActionResolved(message : String) : void
+    +onActionCancelled() : void
+    +onExplosionTriggered(playerIndex : int) : void
+    +onDefuseUsed(playerIndex : int) : void
+    +onPlayerEliminated(playerIndex : int) : void
+    +onGameOver(winnerIndex : int) : void
+    +onError(message : String) : void
+    +displayPlayerHand(player : Player) : void
+    +promptForAction() : int
+    +promptForNopeResponse() : boolean
+    +promptForDefusePosition(maxPosition : int) : int
   }
 }
 
-package domain.game {
-  class Game {
-    -numberOfPlayers : int
-    -gameType : GameType
-    -deck : Deck
-    -players : Player[]
-    -turnManager : TurnManager
-    -playerManager : PlayerManager
-    -actionExecutor : ActionExecutor
-    +Game(numberOfPlayers : int, gameType : GameType, deck : Deck, players : Player[], turnManager : TurnManager, playerManager : PlayerManager, actionExecutor : ActionExecutor)
+package model {
+  interface GameContext {
     +getDeck() : Deck
-    +getPlayerAtIndex(playerIndex : int) : Player
-    +getNumberOfPlayers() : int
-    +getGameType() : GameType
-    +getTurnManager() : TurnManager
-    +getPlayerManager() : PlayerManager
-    +executeCardAction(action : CardAction, context : GameContext) : void
-  }
-  
-  class TurnManager {
-    -currentPlayerTurn : int
-    -currentPlayerNumberOfTurns : int
-    -isReversed : boolean
-    -attackQueue : List<Integer>
-    -attackCounter : int
-    -numberOfAttacks : int
-    -turnTracker : int[]
-    -attacked : boolean
-    +TurnManager(numberOfPlayers : int)
-    +getCurrentPlayerTurn() : int
-    +incrementPlayerTurn() : void
-    +decrementNumberOfTurns() : void
-    +getNumberOfTurns() : int
-    +setCurrentPlayerNumberOfTurns(numberOfTurns : int) : void
-    +startAttackPhase() : void
-    +playAttack() : void
-    +playTargetedAttack(playerIndex : int) : void
-    +getAttacked() : boolean
-    +getIsReversed() : boolean
-  }
-  
-  class PlayerManager {
-    -players : Player[]
-    -numberOfPlayers : int
-    +PlayerManager(players : Player[], numberOfPlayers : int)
-    +getPlayerAtIndex(playerIndex : int) : Player
-    +checkIfPlayerDead(playerIndex : int) : boolean
-    +checkIfPlayerHasCard(playerIndex : int, cardType : CardType) : boolean
-    +checkNumberOfAlivePlayers() : int
-    +getNumberOfPlayers() : int
-  }
-  
-  class ActionExecutor {
-    +execute(action : CardAction, context : GameContext) : ActionResult
-    +cancelAction(action : Cancellable) : void
-  }
-  
-  class Card {
-    -cardType : CardType
-    -isMarked : boolean
-    -isFacedUp : boolean
-    -action : CardAction
-    +Card(cardType : CardType, action : CardAction)
-    +getCardType() : CardType
-    +getAction() : CardAction
-    +play(context : GameContext) : ActionResult
-    +markCard() : void
-    +checkIfMarked() : boolean
-    +setFacedUp() : void
-    +checkIfFacedUp() : boolean
-  }
-  
-  class Deck {
-    -deck : List<Card>
-    -rand : Random
-    -gameType : GameType
-    -numberOfPlayers : int
-    -maxDeckSize : int
-    -cardFactory : CardFactory
-    +Deck(deck : List<Card>, rand : Random, gameType : GameType, numberOfPlayers : int, maxDeckSize : int, cardFactory : CardFactory)
-    +getDeckSize() : int
-    +getCardAtIndex(index : int) : Card
-    +initializeDeck() : void
-    +shuffleDeck() : void
-    +insertCard(cardType : CardType, numberOfCards : int, bottom : boolean) : void
-    +drawCard() : Card
-    +drawCardFromBottom() : Card
-    +setNumberOfPlayers(numberOfPlayers : int) : void
-    +chooseGameType(gameType : GameType) : void
-    +removeBombs() : int
-    +insertExplodingKittenAtIndex(indexToInsert : int) : void
-    +reorderDeckCards(newOrderIndices : int[], cardsToReorder : List<Card>) : void
-  }
-  
-  class Player {
-    -playerID : int
-    -hand : List<Card>
-    -isDead : boolean
-    -rand : Random
-    -isCursed : boolean
-    +Player(playerID : int, instantiator : Instantiator)
-    +getPlayerID() : int
-    +addDefuse(defuse : Card) : void
-    +addCardToHand(card : Card) : void
-    +hasCard(cardType : CardType) : boolean
-    +getHandSize() : int
-    +getCardAt(index : int) : Card
-    +getIndexOfCard(cardType : CardType) : int
-    +removeCardFromHand(index : int) : CardType
-    +shuffleHand() : void
-    +checkNumberOfCardsInHand(cardType : CardType) : int
-    +getIsDead() : boolean
-    +setIsDead() : void
-    +getIsCursed() : boolean
-    +setCursed(isCursed : boolean) : void
-  }
-  
-  enum CardType {
-    NOPE
-    DEFUSE
-    ATTACK
-    SHUFFLE
-    SKIP
-    SEE_THE_FUTURE
-    CAT_ONE
-    CAT_TWO
-    CAT_THREE
-    CAT_FOUR
-    EXPLODING_KITTEN
-    STREAKING_KITTEN
-    SWAP_TOP_AND_BOTTOM
-    GARBAGE_COLLECTION
-    CURSE_OF_THE_CAT_BUTT
-    ALTER_THE_FUTURE
-    CATOMIC_BOMB
-    SUPER_SKIP
-    MARK
-    IMPLODING_KITTEN
-    REVERSE
-    FERAL_CAT
-    TARGETED_ATTACK
-    DRAW_FROM_THE_BOTTOM
-    -{final} gameType : GameType
-    CardType(gameType : GameType)
-  }
-  
-  enum GameType {
-    NONE
-    EXPLODING_KITTENS
-    STREAKING_KITTENS
-    IMPLODING_KITTENS
-  }
-  
-  class Instantiator {
-    +createCard(cardType : CardType) : Card
-    +createRandom() : Random
-    +createCardList() : ArrayList<Card>
-  }
-  
-  class CardFactory {
-    +createCard(cardType : CardType) : Card
-    +createCardWithAction(cardType : CardType) : Card
-  }
-  
-  class GameContext {
-    -game : Game
-    -currentPlayer : Player
-    -deck : Deck
-    -turnManager : TurnManager
-    -playerManager : PlayerManager
-    +GameContext(game : Game, currentPlayer : Player, deck : Deck, turnManager : TurnManager, playerManager : PlayerManager)
-    +getGame() : Game
     +getCurrentPlayer() : Player
+    +getPlayerAtIndex(index : int) : Player
+    +getNumberOfPlayers() : int
+    +getCurrentPlayerIndex() : int
+    +getGameState() : GameState
+  }
+
+  enum GameState {
+    SETUP
+    PLAYER_TURN
+    NOPE_WINDOW
+    EXPLOSION_PENDING
+    GAME_OVER
+  }
+
+  class Game {
+    -players : List<Player>
+    -deck : Deck
+    -currentPlayerIndex : int
+    -state : GameState
+    -turnManager : TurnManager
+    -observers : List<GameObserver>
+    -pendingAction : PendingAction
+    +Game(numberOfPlayers : int, deck : Deck)
+    +addObserver(observer : GameObserver) : void
+    +removeObserver(observer : GameObserver) : void
+    -notifyTurnStarted(playerIndex : int) : void
+    -notifyCardPlayed(playerIndex : int, cardType : CardType) : void
+    -notifyNopeWindow(playerIndex : int, cardType : CardType) : void
+    -notifyActionResolved(message : String) : void
+    -notifyActionCancelled() : void
+    -notifyExplosion(playerIndex : int) : void
+    -notifyDefuseUsed(playerIndex : int) : void
+    -notifyPlayerEliminated(playerIndex : int) : void
+    -notifyGameOver(winnerIndex : int) : void
+    -notifyError(message : String) : void
     +getDeck() : Deck
-    +getTurnManager() : TurnManager
-    +getPlayerManager() : PlayerManager
+    +getCurrentPlayer() : Player
+    +getPlayerAtIndex(index : int) : Player
+    +getNumberOfPlayers() : int
+    +getCurrentPlayerIndex() : int
+    +getGameState() : GameState
+    +setGameState(state : GameState) : void
+    +getPendingAction() : PendingAction
+    +setPendingAction(action : PendingAction) : void
+    +start() : void
+    +drawCard() : void
+    +playCard(cardIndex : int) : void
+    +resolveNopeResponse(wantsToNope : boolean) : void
+    +resolveDefusePosition(position : int) : void
+    +advanceTurn() : void
+    +eliminatePlayer(playerIndex : int) : void
+    -checkWinCondition() : void
+    -handleExplosion() : void
   }
-  
-  class ActionResult {
-    -success : boolean
-    -message : String
-    -cancelled : boolean
-    +ActionResult(success : boolean, message : String)
-    +isSuccess() : boolean
-    +getMessage() : String
-    +isCancelled() : boolean
-    +setCancelled(cancelled : boolean) : void
+
+  class TurnManager {
+    -currentPlayerIndex : int
+    -turnsRemaining : int
+    -numberOfPlayers : int
+    +TurnManager(numberOfPlayers : int)
+    +getCurrentPlayerIndex() : int
+    +getTurnsRemaining() : int
+    +setTurnsRemaining(turns : int) : void
+    +decrementTurns() : void
+    +advanceToNextPlayer(players : List<Player>) : int
+    +skipTurn() : void
+    +addExtraTurns(turns : int) : void
   }
-  
+
+  class PendingAction {
+    -{final} cardAction : CardAction
+    -{final} sourcePlayerIndex : int
+    -nopeCount : int
+    -resolved : boolean
+    +PendingAction(action : CardAction, playerIndex : int)
+    +getCardAction() : CardAction
+    +getSourcePlayerIndex() : int
+    +getNopeCount() : int
+    +addNope() : void
+    +isNoped() : boolean
+    +resolve(context : GameContext) : void
+    +isResolved() : boolean
+  }
+
+  class Player {
+    -{final} id : int
+    -hand : List<Card>
+    -alive : boolean
+    +Player(id : int)
+    +getId() : int
+    +getHand() : List<Card>
+    +getHandSize() : int
+    +getCard(index : int) : Card
+    +addCard(card : Card) : void
+    +removeCard(index : int) : Card
+    +hasCardOfType(type : CardType) : boolean
+    +findCardOfType(type : CardType) : int
+    +removeCardOfType(type : CardType) : Card
+    +isAlive() : boolean
+    +eliminate() : void
+  }
+
+  class Deck {
+    -cards : List<Card>
+    +Deck()
+    +initialize(numberOfPlayers : int) : void
+    +shuffle() : void
+    +draw() : Card
+    +insertAt(position : int, card : Card) : void
+    +getSize() : int
+    +isEmpty() : boolean
+  }
+
+  class Card {
+    -{final} type : CardType
+    -{final} action : CardAction
+    +Card(type : CardType, action : CardAction)
+    +getType() : CardType
+    +getAction() : CardAction
+  }
+
+  enum CardType {
+    EXPLODING_KITTEN
+    DEFUSE
+    NOPE
+    SHUFFLE
+  }
+
+  class CardFactory {
+    +{static} createCard(type : CardType) : Card
+    +{static} createExplodingKitten() : Card
+    +{static} createDefuse() : Card
+    +{static} createNope() : Card
+    +{static} createShuffle() : Card
+  }
+
   interface CardAction {
-    +execute(context : GameContext) : ActionResult
-    +canExecute(context : GameContext) : boolean
+    +execute(context : GameContext) : void
+    +isNopeable() : boolean
     +getCardType() : CardType
   }
-  
-  interface Cancellable {
-    +cancel() : void
-    +isCancelled() : boolean
-  }
-  
+
   class ExplodingKittenAction {
-    -cancelled : boolean
-    +execute(context : GameContext) : ActionResult
-    +canExecute(context : GameContext) : boolean
+    +execute(context : GameContext) : void
+    +isNopeable() : boolean
     +getCardType() : CardType
   }
-  
+
   class DefuseAction {
-    -cancelled : boolean
-    +execute(context : GameContext) : ActionResult
-    +canExecute(context : GameContext) : boolean
+    -insertPosition : int
+    +setInsertPosition(position : int) : void
+    +getInsertPosition() : int
+    +execute(context : GameContext) : void
+    +isNopeable() : boolean
     +getCardType() : CardType
   }
-  
+
   class ShuffleAction {
-    -cancelled : boolean
-    +execute(context : GameContext) : ActionResult
-    +canExecute(context : GameContext) : boolean
+    +execute(context : GameContext) : void
+    +isNopeable() : boolean
     +getCardType() : CardType
-    +cancel() : void
-    +isCancelled() : boolean
   }
-  
+
   class NopeAction {
-    -targetAction : Cancellable
-    +NopeAction(targetAction : Cancellable)
-    +execute(context : GameContext) : ActionResult
-    +canExecute(context : GameContext) : boolean
+    +execute(context : GameContext) : void
+    +isNopeable() : boolean
     +getCardType() : CardType
-    +setTargetAction(targetAction : Cancellable) : void
+  }
+
+  package exceptions {
+    class GameException {
+      +GameException(message : String)
+    }
+
+    class InvalidMoveException {
+      +InvalidMoveException(message : String)
+    }
+
+    class EmptyDeckException {
+      +EmptyDeckException()
+    }
   }
 }
 
-Game --> Deck
-Game --> Player
-Game --> TurnManager
-Game --> PlayerManager
-Game --> ActionExecutor
-TurnManager ..> PlayerManager
-ActionExecutor ..> CardAction
-ActionExecutor ..> GameContext
-Card --> CardType
-Card --> CardAction
-Deck --> Card
-Deck --> GameType
-Deck --> CardFactory
-Player --> Card
-CardFactory ..> CardAction
-CardFactory ..> Card
-GameContext --> Game
-GameContext --> Player
-GameContext --> Deck
-GameContext --> TurnManager
-GameContext --> PlayerManager
+Game ..|> GameContext
+GameUI ..|> GameObserver
+
 ExplodingKittenAction ..|> CardAction
 DefuseAction ..|> CardAction
 ShuffleAction ..|> CardAction
-ShuffleAction ..|> Cancellable
 NopeAction ..|> CardAction
-NopeAction ..> Cancellable
+
+InvalidMoveException --|> GameException
+EmptyDeckException --|> GameException
+
+Main ..> GameController
 Main ..> GameUI
-Main ..> Game
-Main ..> Instantiator
-Main ..> Deck
-Main ..> Player
-GameUI --> Game
+GameController --> Game
+GameController --> GameUI
+GameUI ..> GameController
+Game --> TurnManager
+Game --> Deck
+Game --> Player
+Game --> GameState
+Game --> PendingAction
+Game ..> GameObserver
+Player --> Card
+Deck --> Card
+Card --> CardType
+Card --> CardAction
+CardFactory ..> Card
+CardFactory ..> ExplodingKittenAction
+CardFactory ..> DefuseAction
+CardFactory ..> ShuffleAction
+CardFactory ..> NopeAction
+PendingAction --> CardAction
+Deck ..> EmptyDeckException
+Game ..> InvalidMoveException
 
 @enduml
