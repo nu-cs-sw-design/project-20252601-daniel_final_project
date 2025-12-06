@@ -1,4 +1,6 @@
-package domain.game;
+package view;
+
+import domain.game.CardType;
 
 public interface GameObserver {
     void onTurnStarted(int playerIndex);
