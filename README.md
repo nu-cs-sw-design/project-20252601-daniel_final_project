@@ -17,6 +17,3 @@ project in Dr. Yiji Zhang's class at Northwestern University.
 The names of the authors are removed on purpose to
 not reveal their identities.
 The codebased is maintained by Dr. Yiji Zhang.
-
-## Build Instructions
-HOW TO BUILD YOUR PROJECT.

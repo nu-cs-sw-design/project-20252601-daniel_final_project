@@ -225,14 +225,3 @@
 9. The next player draws the Exploding Kitten.
 
 **Postcondition:** The Exploding Kitten is placed on top of the deck, likely eliminating the next player (unless they also have a Defuse).
-
----
-
-## Business Rules Summary
-
-| Card             | Quantity in Deck | Can Be Noped | Ends Turn | Played Voluntarily |
-| ---------------- | ---------------- | ------------ | --------- | ------------------ |
-| Exploding Kitten | n-1 (n=players)  | No           | Yes       | No (drawn only)    |
-| Nope             | 4                | Yes          | No        | Yes (reactive)     |
-| Shuffle          | 4                | Yes          | No        | Yes                |
-| Defuse           | 5 total          | No           | Yes       | No (reactive)      |
