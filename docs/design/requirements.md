@@ -1,227 +1,258 @@
 # Use Cases
 
-## UC1: Start the Game
+## UC1: Start Game
 
-**Actor:** Player
+**Actor:** Players (2-4 sharing terminal)
 
-**Precondition:** The application is launched and no game is currently in progress.
+**Precondition:**
 
-**Basic Flow:**
-
-1. The system displays language selection options (English/Korean).
-2. The user selects a language.
-3. The system confirms language selection and displays the game mode options (Exploding Kittens, Imploding Kittens, Streaking Kittens).
-4. The user selects a game mode.
-5. The system confirms game mode and prompts for the number of players (2-4).
-6. The user enters number of players.
-7. The system deals 1 Defuse card to each player.
-8. The system initializes the deck based on game mode.
-9. The system shuffles the deck.
-10. The system deals 5 cards to each player from the deck.
-11. The system inserts Exploding Kittens into the deck (numberOfPlayers - 1 cards, or numberOfPlayers for Streaking Kittens).
-12. If Imploding Kittens mode, the system inserts 1 Imploding Kitten into the deck.
-13. The system shuffles the deck once more.
-14. The system begins the game loop with Player 0's turn.
-
-**Exception Flow A:**
-
-2.a. If user enters invalid language choice, system displays error message. Resume at Step 1.
-
-**Exception Flow B:**
-
-6.a. If user enters an invalid number of players, system displays error message. Resume at Step 5.
-
-**Postcondition:** Game is initialized with all players having cards, deck is shuffled, and first player's turn begins.
-
----
-
-## UC2: Draw Exploding Kitten Without Defuse
-
-**Actor:** Player
-
-**Precondition:** It is the player's turn and they choose to end their turn by drawing a card. The top card of the deck is an Exploding Kitten. The player does not have a Defuse card in their hand.
+- Application is runnable on device
+- No game is currently running
 
 **Basic Flow:**
 
-1. The player chooses to end their turn and draw a card.
-2. The system draws the top card from the deck.
-3. The system identifies the card as an Exploding Kitten.
-4. The system displays "You drew an Exploding Kitten!"
-5. The system checks the player's hand for a Defuse card.
-6. The system determines the player has no Defuse card.
-7. The system displays "You don't have a Defuse card. You exploded!"
-8. The system marks the player as eliminated.
-9. The system removes the Exploding Kitten from play.
-10. The system advances to the next alive player's turn.
+1. System starts and displays language selection menu (English/Korean)
+2. User selects preferred language by entering 1 or 2
+3. System displays game variant selection menu (Exploding Kittens/Imploding Kittens/Streaking Kittens)
+4. User selects game variant by entering 1, 2, or 3
+5. System displays player count prompt (2-4 players)
+6. User enters number of players
+7. System initializes game state:
+   - Deals one Defuse card to each player
+   - Creates deck with cards appropriate to selected variant
+   - Shuffles the deck
+   - Deals 5 cards to each player
+   - Inserts Exploding Kitten cards (count = players - 1 for base game, players for Streaking Kittens)
+   - Inserts Imploding Kitten if Imploding Kittens variant selected
+   - Shuffles the deck again
+8. System displays initial game state showing Player 0's hand and turn information
+9. System begins turn loop until only one player survives
 
-**Postcondition:** The player is eliminated from the game. The game continues with remaining players.
+**Exception Flow A (Invalid Language):**
 
----
+2.a. If user enters invalid input (not 1 or 2), system displays error message. Resume at Step 1.
 
-## UC3: Draw Exploding Kitten With Defuse
+**Exception Flow B (Invalid Variant):**
 
-**Actor:** Player
+4.a. If user enters invalid input (not 1, 2, or 3), system displays error message. Resume at Step 3.
 
-**Precondition:** It is the player's turn and they choose to end their turn by drawing a card. The top card of the deck is an Exploding Kitten. The player has a Defuse card in their hand.
+**Exception Flow C (Invalid Player Count):**
 
-**Basic Flow:**
+6.a. If user enters invalid player count (not 2-4), system displays error message. Resume at Step 5.
 
-1. The player chooses to end their turn and draw a card.
-2. The system draws the top card from the deck.
-3. The system identifies the card as an Exploding Kitten.
-4. The system displays "You drew an Exploding Kitten!"
-5. The system checks the player's hand for a Defuse card.
-6. The system determines the player has a Defuse card.
-7. The system displays "You have a Defuse card! You defused the Exploding Kitten."
-8. The system removes the Defuse card from the player's hand.
-9. The system prompts the player for an insertion index (0 to deck size).
-10. The player enters an index.
-11. The system inserts the Exploding Kitten at the specified position in the deck.
-12. The system ends the player's turn and advances to the next player.
+**Postcondition:**
 
-**Exception Flow A:**
-
-10.a. If user enters an invalid index (negative or greater than deck size), system displays error message. Resume at Step 9.
-
-**Postcondition:** The player survives. The Defuse card is consumed. The Exploding Kitten is placed back in the deck at the player's chosen position.
-
----
-
-## UC4: Play Nope Card (Simple Nope)
-
-**Actor:** Player B (responding to Player A's action)
-
-**Precondition:** Player A has played a card that can be Noped (e.g., Shuffle). Player B has a Nope card in their hand.
-
-**Basic Flow:**
-
-1. Player A plays a card (e.g., Shuffle).
-2. The system prompts all other players if they want to play a Nope card.
-3. Player B chooses to play their Nope card.
-4. The system removes the Nope card from Player B's hand.
-5. The system prompts remaining players if they want to Nope the Nope.
-6. No other players choose to play a Nope.
-7. The system cancels Player A's original action.
-8. The system displays "Nope! Action cancelled."
-9. The system discards Player A's original card.
-10. Player A's turn continues normally.
-
-**Exception Flow A:**
-
-3.a. No players choose to play a Nope card. The system executes Player A's original action. End use case.
-
-**Postcondition:** Player A's action is cancelled. Player A's card and Player B's Nope card are both discarded. Player A's turn continues.
-
----
-
-## UC5: Nope Chain
-
-**Actor:** Multiple Players with Nope cards
-
-**Precondition:** Player A has played a card that can be Noped. Multiple players have Nope cards.
-
-**Basic Flow:**
-
-1. Player A plays Shuffle card.
-2. The system prompts all other players if they want to play a Nope card.
-3. Player B plays Nope (blocks Shuffle).
-4. The system prompts all players if they want to Nope the Nope.
-5. Player C plays Nope (blocks Player B's Nope, allowing Shuffle).
-6. The system prompts all players if they want to Nope the Nope.
-7. Player D plays Nope (blocks Player C's Nope, blocking Shuffle).
-8. The system prompts all players if they want to Nope the Nope.
-9. No more players choose to play Nope.
-10. The system counts total Nopes played (3 - odd number).
-11. The system determines the original action is blocked.
-12. The system discards all played cards (Shuffle + 3 Nopes).
-13. Player A's turn continues normally.
-
-**Postcondition:** Original action is blocked (odd number of Nopes). All played Nope cards and the original card are discarded.
+- Game is initialized with selected variant and player count
+- Each player has 6 cards (1 Defuse + 5 random cards)
+- Deck contains appropriate number of Exploding Kittens
+- Player 0's turn begins
 
 **Special Requirements:**
 
-1. Odd number of Nopes = action is blocked.
-2. Even number of Nopes = action proceeds.
+- Language selection persists for entire game session
+- Game variant determines deck composition
+- All players share the same terminal for input
 
 ---
 
-## UC6: Play Shuffle Card
+## UC2: Play Shuffle Card
 
-**Actor:** Player
+**Actor:** Current player
 
-**Precondition:** It is the player's turn. The player has a Shuffle card in their hand.
+**Precondition:**
+
+- Game is in progress
+- Current player has at least one SHUFFLE card in hand
+- It is current player's turn
+
+**Trigger:** Player chooses to play SHUFFLE card from hand
 
 **Basic Flow:**
 
-1. The player selects the Shuffle card from their hand.
-2. The system removes the Shuffle card from the player's hand.
-3. The system prompts all other players if they want to play a Nope card.
-4. No players choose to Nope.
-5. The system prompts the player for number of shuffles (1-100).
-6. The player enters a valid number.
-7. The system shuffles the deck the specified number of times using Fisher-Yates algorithm.
-8. The system displays "Deck has been shuffled."
-9. The player's turn continues (they may play more cards or draw to end turn).
+1. System displays current player's hand with card indices
+2. Player selects SHUFFLE card index from their hand
+3. System removes SHUFFLE card from player's hand
+4. System checks if any other player wants to play NOPE card:
+   - For each other player who has NOPE:
+   - System prompts: "Player X has a NOPE card. Would you like to play a NOPE? (1=Yes, 2=No)"
+   - Player responds
+5. If no NOPE played (or even number of NOPEs), system proceeds:
+   - System prompts: "How many times to shuffle? (1-100)"
+   - Player enters number of shuffles
+   - System validates input (must be 1-100)
+   - System executes shuffle using Fisher-Yates algorithm
+   - System displays confirmation message
+6. Player continues turn (may play more cards or end turn by drawing)
 
-**Exception Flow A:**
+**Alternate Flow A (NOPE Chain - Odd NOPEs):**
 
-4.a. A player chooses to Nope the Shuffle. The Shuffle is cancelled (see UC4 or UC5). End use case.
+4.a. One or more players play NOPE cards (odd total count). System displays cancellation message. SHUFFLE effect does not execute. SHUFFLE card is still removed from hand. Resume normal turn.
 
-**Exception Flow B:**
+**Alternate Flow B (NOPE Chain - Even NOPEs):**
 
-6.a. The player enters an invalid number (≤0 or >100). The system displays an error message. Resume at Step 5.
+4.a. Multiple players play NOPE cards (even total count). System displays that effect goes through. Resume at Step 5.
 
-**Postcondition:** The deck is randomized. The Shuffle card is discarded. The player's turn continues.
+**Exception Flow A (Invalid Shuffle Count):**
+
+5.a. If player enters invalid number (≤0 or >100), system displays error. Resume at Step 5.
+
+**Postcondition:**
+
+- If not NOPEd: Deck is shuffled, card order randomized
+- If NOPEd: Deck remains unchanged
+- SHUFFLE card removed from player's hand
+- Player may continue turn or end turn
 
 ---
 
-## UC7: Play Defuse Card (After Drawing Exploding Kitten)
+## UC3: Play Nope Card
 
-**Actor:** Player
+**Actor:** Any player with NOPE card (except the one who played the card being NOPEd)
 
-**Precondition:** The player has drawn an Exploding Kitten. The player has a Defuse card in their hand.
+**Precondition:**
+
+- Game is in progress
+- Another player has just played a NOPEable card (SHUFFLE, ATTACK, etc.)
+- Reacting player has at least one NOPE card in hand
+- Reacting player is not the one who played the card being NOPEd
+
+**Trigger:** System prompts player to decide whether to play NOPE
 
 **Basic Flow:**
 
-1. The system detects player drew an Exploding Kitten.
-2. The system checks player's hand and finds a Defuse card.
-3. The system automatically uses the Defuse card.
-4. The system removes the Defuse card from the player's hand.
-5. The system prompts the player for insertion index (0 to deck size).
-6. The player enters a valid index.
-7. The system inserts the Exploding Kitten at the specified position.
-8. The system displays "Exploding Kitten defused and placed back in deck."
-9. The player's turn ends and play passes to the next player.
+1. Another player plays a NOPEable card effect
+2. System identifies all players with NOPE cards (excluding card player)
+3. For each eligible player in turn order:
+   - System displays: "Player X has a NOPE card"
+   - System prompts: "Would you like to play a NOPE? (1=Yes, 2=No)"
+   - Player responds with 1 (Yes) or 2 (No)
+4. If player chooses Yes (plays NOPE):
+   - System removes NOPE card from player's hand
+   - System displays that player played NOPE
+   - System recursively checks remaining players for NOPE response (NOPE the NOPE)
+5. If player chooses No:
+   - System displays that player did not play NOPE
+   - Continue to next player with NOPE card
+6. When all players have responded:
+   - If total NOPE count is odd: Original effect is CANCELLED
+   - If total NOPE count is even (including 0): Original effect EXECUTES
 
-**Exception Flow A:**
+**Alternate Flow A (NOPE a NOPE):**
 
-6.a. The player enters an invalid index. The system displays an error message. Resume at Step 5.
+4.a. After a NOPE is played, system checks if other players want to NOPE the NOPE. Same flow continues recursively. Each NOPE negates the previous action. Final result depends on odd/even count.
 
-**Postcondition:** The player survives. The Defuse card is consumed. The Exploding Kitten is back in the deck at the chosen position. Turn passes to next player.
+**Exception Flow A (Invalid Input):**
+
+3.a. If player enters invalid input (not 1 or 2), system displays error message. Resume at Step 3.
+
+**Postcondition:**
+
+- NOPE card(s) removed from player(s) hands
+- Original effect either cancelled (odd NOPEs) or executes (even NOPEs)
+- Game continues with original card player's turn
 
 **Special Requirements:**
 
-1. Defuse cannot be Noped.
-2. Player can strategically place Exploding Kitten (top = index 0 for next player, deep = safer for everyone).
+- Odd number of NOPEs = action is blocked
+- Even number of NOPEs = action proceeds
+- NOPE cannot cancel Exploding Kitten or Defuse
 
 ---
 
-## UC8: Strategic Defuse Placement (Target Next Player)
+## UC4: Draw Exploding Kitten Card
 
-**Actor:** Player
+**Actor:** Current player
 
-**Precondition:** The player has drawn an Exploding Kitten and has a Defuse card. The player wants to eliminate the next player.
+**Precondition:**
+
+- Game is in progress
+- Current player's turn is ending
+- At least one Exploding Kitten exists in the deck
+- Current player must draw a card to end their turn
+
+**Trigger:** Player ends turn and draws top card from deck
 
 **Basic Flow:**
 
-1. The player draws an Exploding Kitten.
-2. The system prompts to use Defuse.
-3. The player's Defuse card is consumed.
-4. The system prompts for insertion index.
-5. The player enters 0 (top of deck).
-6. The system places the Exploding Kitten on top of the deck.
-7. Turn passes to the next player.
-8. The next player must draw at the end of their turn.
-9. The next player draws the Exploding Kitten.
+1. Player completes their card plays and chooses to end turn
+2. System draws top card from deck
+3. System identifies card as EXPLODING_KITTEN type
+4. System displays: "You drew an Exploding Kitten!"
+5. System checks if player has DEFUSE card in hand:
+   - If no DEFUSE: Go to Exception Flow A (Player Explodes)
+   - If has DEFUSE: Continue to Step 6
+6. System displays that player has a Defuse card
+7. System removes DEFUSE card from player's hand
+8. System prompts player for insertion index (0 to deck size)
+9. Player enters valid index
+10. System inserts EXPLODING_KITTEN back into deck at specified position
+11. System displays confirmation message
+12. Turn passes to next player
 
-**Postcondition:** The Exploding Kitten is placed on top of the deck, likely eliminating the next player (unless they also have a Defuse).
+**Exception Flow A (Player Explodes - No Defuse):**
+
+5.a. System displays: "You don't have a Defuse card!"
+5.b. System displays: "You exploded!"
+5.c. System marks player as DEAD
+5.d. System removes player from active rotation
+5.e. Turn passes to next alive player
+5.f. Game checks for victory condition (only 1 player remaining)
+
+**Exception Flow B (Invalid Insertion Position):**
+
+9.a. If player enters position < 0 or > deck size, system displays error message. Resume at Step 8.
+
+**Postcondition:**
+
+- If survived: EXPLODING_KITTEN reinserted into deck at chosen position, DEFUSE removed from hand
+- If exploded: Player marked as DEAD, removed from game
+- Turn advances to next player
+- Game ends if only 1 player remains alive
+
+---
+
+## UC5: Play Defuse Card
+
+**Actor:** Current player who drew an Exploding Kitten
+
+**Precondition:**
+
+- Player has just drawn an Exploding Kitten card
+- Player has at least one DEFUSE card in hand
+
+**Trigger:** System automatically triggers Defuse when Exploding Kitten is drawn and player has Defuse
+
+**Basic Flow:**
+
+1. System detects player drew an Exploding Kitten
+2. System checks player's hand and finds a DEFUSE card
+3. System displays that player will use Defuse to survive
+4. System removes the DEFUSE card from player's hand
+5. System prompts player for insertion index:
+   - "Where do you want to insert the Exploding Kitten? (0 to [deck size])"
+   - Index 0 = top of deck (next player draws it)
+   - Index = deck size = bottom of deck (safest position)
+6. Player enters desired index
+7. System validates index (must be 0 to deck size inclusive)
+8. System inserts the Exploding Kitten at specified position in deck
+9. System displays confirmation: "Exploding Kitten defused and placed back in deck"
+10. Player's turn ends and play passes to next player
+
+**Exception Flow A (Invalid Index):**
+
+6.a. If player enters invalid index (negative or greater than deck size), system displays error message. Resume at Step 5.
+
+**Postcondition:**
+
+- Player survives the Exploding Kitten
+- DEFUSE card is removed from player's hand (consumed)
+- EXPLODING_KITTEN is placed back into deck at player's chosen position
+- Turn passes to next player
+
+**Special Requirements:**
+
+- Defuse cannot be NOPEd
+- Player can strategically place Exploding Kitten:
+  - Index 0 (top) = next player will likely draw it
+  - Higher index = deeper in deck, safer for everyone
+- Defuse is automatically used when Exploding Kitten is drawn (not optional)
