@@ -1,279 +1,287 @@
 @startuml
 
-package controller {
-  class Main {
-    +{static} main(args : String[]) : void
-  }
+title Exploding Kittens - Refactored Design (Strategy Pattern)
 
-  class GameController {
-    -game : Game
-    -ui : GameUI
-    +GameController(game : Game, ui : GameUI)
-    +initialize() : void
-    +handleDrawCard() : void
-    +handlePlayCard(cardIndex : int) : void
-    +handleNopeResponse(wantsToNope : boolean) : void
-    +handleDefusePosition(position : int) : void
-    -processGameState() : void
-  }
-}
-
-package view {
-  interface GameObserver {
-    +onTurnStarted(playerIndex : int) : void
-    +onCardPlayed(playerIndex : int, cardType : CardType) : void
-    +onNopeWindowOpened(sourcePlayerIndex : int, cardType : CardType) : void
-    +onActionResolved(message : String) : void
-    +onActionCancelled() : void
-    +onExplosionTriggered(playerIndex : int) : void
-    +onDefuseUsed(playerIndex : int) : void
-    +onPlayerEliminated(playerIndex : int) : void
-    +onGameOver(winnerIndex : int) : void
-    +onError(message : String) : void
-  }
-
-  class GameUI {
-    -controller : GameController
-    +GameUI()
-    +setController(controller : GameController) : void
-    +onTurnStarted(playerIndex : int) : void
-    +onCardPlayed(playerIndex : int, cardType : CardType) : void
-    +onNopeWindowOpened(sourcePlayerIndex : int, cardType : CardType) : void
-    +onActionResolved(message : String) : void
-    +onActionCancelled() : void
-    +onExplosionTriggered(playerIndex : int) : void
-    +onDefuseUsed(playerIndex : int) : void
-    +onPlayerEliminated(playerIndex : int) : void
-    +onGameOver(winnerIndex : int) : void
-    +onError(message : String) : void
-    +displayPlayerHand(player : Player) : void
-    +promptForAction() : int
-    +promptForNopeResponse() : boolean
-    +promptForDefusePosition(maxPosition : int) : int
-  }
-}
-
-package model {
-  interface GameContext {
-    +getDeck() : Deck
-    +getCurrentPlayer() : Player
-    +getPlayerAtIndex(index : int) : Player
-    +getNumberOfPlayers() : int
-    +getCurrentPlayerIndex() : int
-    +getGameState() : GameState
-  }
-
-  enum GameState {
-    SETUP
-    PLAYER_TURN
-    NOPE_WINDOW
-    EXPLOSION_PENDING
-    GAME_OVER
-  }
-
-  class Game {
-    -players : List<Player>
-    -deck : Deck
-    -currentPlayerIndex : int
-    -state : GameState
-    -turnManager : TurnManager
-    -observers : List<GameObserver>
-    -pendingAction : PendingAction
-    +Game(numberOfPlayers : int, deck : Deck)
-    +addObserver(observer : GameObserver) : void
-    +removeObserver(observer : GameObserver) : void
-    -notifyTurnStarted(playerIndex : int) : void
-    -notifyCardPlayed(playerIndex : int, cardType : CardType) : void
-    -notifyNopeWindow(playerIndex : int, cardType : CardType) : void
-    -notifyActionResolved(message : String) : void
-    -notifyActionCancelled() : void
-    -notifyExplosion(playerIndex : int) : void
-    -notifyDefuseUsed(playerIndex : int) : void
-    -notifyPlayerEliminated(playerIndex : int) : void
-    -notifyGameOver(winnerIndex : int) : void
-    -notifyError(message : String) : void
-    +getDeck() : Deck
-    +getCurrentPlayer() : Player
-    +getPlayerAtIndex(index : int) : Player
-    +getNumberOfPlayers() : int
-    +getCurrentPlayerIndex() : int
-    +getGameState() : GameState
-    +setGameState(state : GameState) : void
-    +getPendingAction() : PendingAction
-    +setPendingAction(action : PendingAction) : void
-    +start() : void
-    +drawCard() : void
-    +playCard(cardIndex : int) : void
-    +resolveNopeResponse(wantsToNope : boolean) : void
-    +resolveDefusePosition(position : int) : void
-    +advanceTurn() : void
-    +eliminatePlayer(playerIndex : int) : void
-    -checkWinCondition() : void
-    -handleExplosion() : void
-  }
-
-  class TurnManager {
-    -currentPlayerIndex : int
-    -turnsRemaining : int
-    -numberOfPlayers : int
-    +TurnManager(numberOfPlayers : int)
-    +getCurrentPlayerIndex() : int
-    +getTurnsRemaining() : int
-    +setTurnsRemaining(turns : int) : void
-    +decrementTurns() : void
-    +advanceToNextPlayer(players : List<Player>) : int
-    +skipTurn() : void
-    +addExtraTurns(turns : int) : void
-  }
-
-  class PendingAction {
-    -{final} cardAction : CardAction
-    -{final} sourcePlayerIndex : int
-    -nopeCount : int
-    -resolved : boolean
-    +PendingAction(action : CardAction, playerIndex : int)
-    +getCardAction() : CardAction
-    +getSourcePlayerIndex() : int
-    +getNopeCount() : int
-    +addNope() : void
-    +isNoped() : boolean
-    +resolve(context : GameContext) : void
-    +isResolved() : boolean
-  }
-
-  class Player {
-    -{final} id : int
-    -hand : List<Card>
-    -alive : boolean
-    +Player(id : int)
-    +getId() : int
-    +getHand() : List<Card>
-    +getHandSize() : int
-    +getCard(index : int) : Card
-    +addCard(card : Card) : void
-    +removeCard(index : int) : Card
-    +hasCardOfType(type : CardType) : boolean
-    +findCardOfType(type : CardType) : int
-    +removeCardOfType(type : CardType) : Card
-    +isAlive() : boolean
-    +eliminate() : void
-  }
-
-  class Deck {
-    -cards : List<Card>
-    +Deck()
-    +initialize(numberOfPlayers : int) : void
-    +shuffle() : void
-    +draw() : Card
-    +insertAt(position : int, card : Card) : void
-    +getSize() : int
-    +isEmpty() : boolean
-  }
-
-  class Card {
-    -{final} type : CardType
-    -{final} action : CardAction
-    +Card(type : CardType, action : CardAction)
-    +getType() : CardType
-    +getAction() : CardAction
-  }
-
-  enum CardType {
-    EXPLODING_KITTEN
-    DEFUSE
-    NOPE
-    SHUFFLE
-  }
-
-  class CardFactory {
-    +{static} createCard(type : CardType) : Card
-    +{static} createExplodingKitten() : Card
-    +{static} createDefuse() : Card
-    +{static} createNope() : Card
-    +{static} createShuffle() : Card
-  }
-
-  interface CardAction {
-    +execute(context : GameContext) : void
-    +isNopeable() : boolean
-    +getCardType() : CardType
-  }
-
-  class ExplodingKittenAction {
-    +execute(context : GameContext) : void
-    +isNopeable() : boolean
-    +getCardType() : CardType
-  }
-
-  class DefuseAction {
-    -insertPosition : int
-    +setInsertPosition(position : int) : void
-    +getInsertPosition() : int
-    +execute(context : GameContext) : void
-    +isNopeable() : boolean
-    +getCardType() : CardType
-  }
-
-  class ShuffleAction {
-    +execute(context : GameContext) : void
-    +isNopeable() : boolean
-    +getCardType() : CardType
-  }
-
-  class NopeAction {
-    +execute(context : GameContext) : void
-    +isNopeable() : boolean
-    +getCardType() : CardType
-  }
-
-  package exceptions {
-    class GameException {
-      +GameException(message : String)
+package "domain.game" {
+    enum GameType {
+        NONE
+        EXPLODING_KITTENS
+        STREAKING_KITTENS
+        IMPLODING_KITTENS
     }
 
-    class InvalidMoveException {
-      +InvalidMoveException(message : String)
+    enum CardType {
+        NOPE
+        DEFUSE
+        ATTACK
+        SHUFFLE
+        SKIP
+        SEE_THE_FUTURE
+        CAT_ONE
+        CAT_TWO
+        CAT_THREE
+        CAT_FOUR
+        EXPLODING_KITTEN
+        STREAKING_KITTEN
+        SWAP_TOP_AND_BOTTOM
+        GARBAGE_COLLECTION
+        CURSE_OF_THE_CAT_BUTT
+        ALTER_THE_FUTURE
+        CATOMIC_BOMB
+        SUPER_SKIP
+        MARK
+        IMPLODING_KITTEN
+        REVERSE
+        FERAL_CAT
+        TARGETED_ATTACK
+        DRAW_FROM_THE_BOTTOM
+        - gameType: GameType
+        + CardType(gameType: GameType)
     }
 
-    class EmptyDeckException {
-      +EmptyDeckException()
+    class Card {
+        - cardType: CardType
+        - isMarked: boolean
+        - isFacedUp: boolean
+        + Card(cardType: CardType)
+        + getCardType(): CardType
+        + markCard(): void
+        + checkIfMarked(): boolean
+        + setFacedUp(): void
+        + checkIfFacedUp(): boolean
     }
-  }
+
+    class Instantiator {
+        + createCard(cardType: CardType): Card
+        + createRandom(): Random
+        + createCardList(): ArrayList<Card>
+    }
+
+    class Player {
+        - playerID: int
+        - hand: List<Card>
+        - isDead: boolean
+        - rand: Random
+        - isCursed: boolean
+        + Player(playerID: int, instantiator: Instantiator)
+        + getPlayerID(): int
+        + addDefuse(defuse: Card): void
+        + addCardToHand(card: Card): void
+        + hasCard(cardType: CardType): boolean
+        + getHandSize(): int
+        + getCardAt(index: int): Card
+        + getIndexOfCard(cardType: CardType): int
+        + removeCardFromHand(index: int): CardType
+        + shuffleHand(): void
+        + checkNumberOfCardsInHand(cardType: CardType): int
+        + getIsDead(): boolean
+        + setIsDead(): void
+        + getIsCursed(): boolean
+        + setCursed(isCursed: boolean): void
+    }
+
+    class Deck {
+        - deck: List<Card>
+        - rand: Random
+        - gameType: GameType
+        - numberOfPlayers: int
+        - maxDeckSize: int
+        - instantiator: Instantiator
+        + getDeckSize(): int
+        + getCardAtIndex(index: int): Card
+        + initializeDeck(): void
+        + shuffleDeck(): void
+        + insertCard(cardType: CardType, numberOfCards: int, bottom: boolean): void
+        + drawCard(): Card
+        + drawCardFromBottom(): Card
+        + setNumberOfPlayers(numberOfPlayers: int): void
+        + chooseGameType(gameType: GameType): void
+        + removeBombs(): int
+        + insertExplodingKittenAtIndex(indexToInsert: int): void
+        + insertImplodingKittenAtIndex(indexToInsert: int, card: Card): void
+        # getCardTypeAtIndex(index: int): CardType
+        + reorderDeckCards(newOrderIndices: int[], cardsToReorder: List<Card>): void
+    }
+
+    class Game {
+        - numberOfPlayers: int
+        - gameType: GameType
+        - deck: Deck
+        - players: Player[]
+        - rand: Random
+        - currentPlayerTurn: int
+        - currentPlayerNumberOfTurns: int
+        - isReversed: boolean
+        - attackQueue: List<Integer>
+        - attackCounter: int
+        - numberOfAttacks: int
+        - turnTracker: int[]
+        - attacked: boolean
+        + Game(...)
+        + swapTopAndBottom(): void
+        + stealRandomCard(playerToStealFrom: int): Card
+        + stealTypeCard(cardType: CardType, playerToStealFrom: int): void
+        + startAttackPhase(): void
+        + playAttack(): void
+        + playTargetedAttack(attackedPlayerIndex: int): void
+        + playExplodingKitten(playerIndex: int): boolean
+        + playImplodingKitten(): void
+        + playDefuse(idxToInsert: int, playerIndex: int): void
+        + drawFromBottom(): Card
+        + playCatomicBomb(): void
+        + playReverse(): void
+        + playShuffle(numberOfShuffles: int): void
+        + playSkip(superSkip: boolean): int
+        + playGarbageCollection(cardToDiscard: CardType): void
+        + getDeck(): Deck
+        + incrementPlayerTurn(): void
+        + getPlayerAtIndex(playerIndex: int): Player
+        + getPlayerTurn(): int
+        + getNumberOfPlayers(): int
+        + checkNumberOfAlivePlayers(): int
+        + getNumberOfTurns(): int
+        + getDeckSize(): int
+        + drawCard(): Card
+        + checkIfPlayerDead(playerIndex: int): boolean
+        + checkIfPlayerHasCard(playerIndex: int, cardType: CardType): boolean
+        + getCardType(playerIndex: int, cardIndex: int): CardType
+        + getHandSize(playerIndex: int): int
+        .. NEW: Strategy Pattern Integration ..
+        + playCardWithBehavior(cardType: CardType, playerIndex: int): CardResult
+        + hasBehavior(cardType: CardType): boolean
+    }
 }
 
-Game ..|> GameContext
-GameUI ..|> GameObserver
+package "domain.game.behaviors" {
+    interface CardBehavior <<Strategy>> {
+        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + canBeNoped(): boolean
+        + endsTurn(): boolean
+        + getDescription(): String
+    }
 
-ExplodingKittenAction ..|> CardAction
-DefuseAction ..|> CardAction
-ShuffleAction ..|> CardAction
-NopeAction ..|> CardAction
+    class CardResult {
+        - success: boolean
+        - message: String
+        - playerEliminated: boolean
+        + CardResult(success: boolean, message: String)
+        + CardResult(success: boolean, message: String, playerEliminated: boolean)
+        + isSuccess(): boolean
+        + getMessage(): String
+        + isPlayerEliminated(): boolean
+        + {static} success(message: String): CardResult
+        + {static} failure(message: String): CardResult
+        + {static} eliminated(message: String): CardResult
+    }
 
-InvalidMoveException --|> GameException
-EmptyDeckException --|> GameException
+    class ShuffleBehavior {
+        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + canBeNoped(): boolean
+        + endsTurn(): boolean
+        + getDescription(): String
+    }
 
-Main ..> GameController
-Main ..> GameUI
-GameController --> Game
-GameController --> GameUI
-GameUI ..> GameController
-Game --> TurnManager
-Game --> Deck
-Game --> Player
-Game --> GameState
-Game --> PendingAction
-Game ..> GameObserver
-Player --> Card
-Deck --> Card
+    class NopeBehavior {
+        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + canBeNoped(): boolean
+        + endsTurn(): boolean
+        + getDescription(): String
+    }
+
+    class ExplodingKittenBehavior {
+        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + canBeNoped(): boolean
+        + endsTurn(): boolean
+        + getDescription(): String
+        - findPlayerIndex(game: Game, player: Player): int
+    }
+
+    class DefuseBehavior {
+        - insertionIndex: int
+        + setInsertionIndex(index: int): void
+        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + canBeNoped(): boolean
+        + endsTurn(): boolean
+        + getDescription(): String
+        - findPlayerIndex(game: Game, player: Player): int
+    }
+
+    class CardBehaviorFactory <<Factory>> {
+        - CardBehaviorFactory()
+        + {static} createBehavior(cardType: CardType): CardBehavior
+        + {static} hasBehavior(cardType: CardType): boolean
+    }
+}
+
+package "ui" {
+    class GameUI {
+        - game: Game
+        - messages: ResourceBundle
+        + GameUI(game: Game)
+        + chooseLanguage(): void
+        + chooseGame(): void
+        + chooseNumberOfPlayers(): void
+        + startTurn(): void
+        + endGame(): void
+        + checkIfGameOver(): boolean
+    }
+
+    class Main {
+        + {static} main(args: String[]): void
+    }
+}
+
+' Original relationships (unchanged)
 Card --> CardType
-Card --> CardAction
-CardFactory ..> Card
-CardFactory ..> ExplodingKittenAction
-CardFactory ..> DefuseAction
-CardFactory ..> ShuffleAction
-CardFactory ..> NopeAction
-PendingAction --> CardAction
-Deck ..> EmptyDeckException
-Game ..> InvalidMoveException
+CardType ..> GameType
+Deck --> GameType
+Deck --> Instantiator
+Deck ..> Card
+Game --> Deck
+Game --> GameType
+Game --> Player
+Game ..> Card
+Game ..> CardType
+Player --> Card
+Player ..> Instantiator
+Player ..> CardType
+GameUI --> Game
+Main ..> Game
+Main ..> GameUI
+Main ..> Deck
+Main ..> Player
+Main ..> Instantiator
+Instantiator ..> Card
+Instantiator ..> CardType
+
+' NEW: Strategy Pattern relationships
+ShuffleBehavior ..|> CardBehavior
+NopeBehavior ..|> CardBehavior
+ExplodingKittenBehavior ..|> CardBehavior
+DefuseBehavior ..|> CardBehavior
+
+CardBehavior ..> CardResult
+CardBehaviorFactory ..> CardBehavior
+CardBehaviorFactory ..> CardType
+CardBehaviorFactory ..> ShuffleBehavior : creates
+CardBehaviorFactory ..> NopeBehavior : creates
+CardBehaviorFactory ..> ExplodingKittenBehavior : creates
+CardBehaviorFactory ..> DefuseBehavior : creates
+
+Game ..> CardBehavior : uses
+Game ..> CardBehaviorFactory : uses
+Game ..> CardResult : returns
+
+note right of CardBehavior
+  Strategy Pattern:
+  Encapsulates card actions
+  as interchangeable behaviors
+end note
+
+note right of CardBehaviorFactory
+  Factory Pattern:
+  Creates appropriate behavior
+  based on CardType
+end note
 
 @enduml
