@@ -236,7 +236,6 @@ package "ui" {
     }
 }
 
-' Original domain relationships
 Card --> CardType
 CardType ..> GameType
 Deck --> GameType
@@ -253,7 +252,6 @@ Player ..> CardType
 Instantiator ..> Card
 Instantiator ..> CardType
 
-' UI depends on Domain (correct direction)
 GameUI --> Game
 GameUI ..|> UIHandler : implements
 Main ..> Game
@@ -262,7 +260,6 @@ Main ..> Deck
 Main ..> Player
 Main ..> Instantiator
 
-' Strategy Pattern relationships
 ShuffleBehavior ..|> CardBehavior
 NopeBehavior ..|> CardBehavior
 ExplodingKittenBehavior ..|> CardBehavior
