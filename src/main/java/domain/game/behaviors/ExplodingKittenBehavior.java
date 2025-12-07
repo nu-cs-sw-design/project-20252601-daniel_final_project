@@ -3,12 +3,11 @@ package domain.game.behaviors;
 import domain.game.CardType;
 import domain.game.Game;
 import domain.game.Player;
-import ui.GameUI;
 
 public class ExplodingKittenBehavior implements CardBehavior {
     
     @Override
-    public CardResult execute(Game game, Player player, GameUI ui) {
+    public CardResult execute(Game game, Player player, UIHandler uiHandler) {
         int playerIndex = findPlayerIndex(game, player);
         if (playerIndex == -1) {
             return CardResult.failure("Player not found in game.");
@@ -50,4 +49,3 @@ public class ExplodingKittenBehavior implements CardBehavior {
         return -1;
     }
 }
-

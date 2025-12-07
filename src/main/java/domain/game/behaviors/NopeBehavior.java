@@ -2,12 +2,11 @@ package domain.game.behaviors;
 
 import domain.game.Game;
 import domain.game.Player;
-import ui.GameUI;
 
 public class NopeBehavior implements CardBehavior {
     
     @Override
-    public CardResult execute(Game game, Player player, GameUI ui) {
+    public CardResult execute(Game game, Player player, UIHandler uiHandler) {
         return CardResult.success("Nope! Action cancelled.");
     }
     
@@ -26,4 +25,3 @@ public class NopeBehavior implements CardBehavior {
         return "Cancels any action except Exploding Kitten or Defuse.";
     }
 }
-

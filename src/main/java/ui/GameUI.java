@@ -1,6 +1,7 @@
 package ui;
 
 import domain.game.*;
+import domain.game.behaviors.UIHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,11 +13,33 @@ import java.util.Scanner;
 import java.nio.charset.StandardCharsets;
 
 
-public class GameUI {
+public class GameUI implements UIHandler {
 	private Game game;
 	private ResourceBundle messages;
 
 	public GameUI (Game game) { this.game = game; }
+
+	@Override
+	public int promptForInsertionIndex(int maxIndex) {
+		Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
+		System.out.println("Enter index (0 to " + maxIndex + "): ");
+		while (true) {
+			try {
+				int index = Integer.parseInt(scanner.nextLine());
+				if (index >= 0 && index <= maxIndex) {
+					return index;
+				}
+				System.out.println("Invalid index. Please enter 0 to " + maxIndex);
+			} catch (NumberFormatException e) {
+				System.out.println("Please enter a valid number.");
+			}
+		}
+	}
+
+	@Override
+	public void displayMessage(String message) {
+		System.out.println(message);
+	}
 
 	public void chooseLanguage() {
 		Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);

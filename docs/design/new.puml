@@ -151,8 +151,13 @@ package "domain.game" {
 }
 
 package "domain.game.behaviors" {
+    interface UIHandler <<Interface>> {
+        + promptForInsertionIndex(maxIndex: int): int
+        + displayMessage(message: String): void
+    }
+
     interface CardBehavior <<Strategy>> {
-        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + execute(game: Game, player: Player, uiHandler: UIHandler): CardResult
         + canBeNoped(): boolean
         + endsTurn(): boolean
         + getDescription(): String
@@ -173,21 +178,21 @@ package "domain.game.behaviors" {
     }
 
     class ShuffleBehavior {
-        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + execute(game: Game, player: Player, uiHandler: UIHandler): CardResult
         + canBeNoped(): boolean
         + endsTurn(): boolean
         + getDescription(): String
     }
 
     class NopeBehavior {
-        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + execute(game: Game, player: Player, uiHandler: UIHandler): CardResult
         + canBeNoped(): boolean
         + endsTurn(): boolean
         + getDescription(): String
     }
 
     class ExplodingKittenBehavior {
-        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + execute(game: Game, player: Player, uiHandler: UIHandler): CardResult
         + canBeNoped(): boolean
         + endsTurn(): boolean
         + getDescription(): String
@@ -197,7 +202,7 @@ package "domain.game.behaviors" {
     class DefuseBehavior {
         - insertionIndex: int
         + setInsertionIndex(index: int): void
-        + execute(game: Game, player: Player, ui: GameUI): CardResult
+        + execute(game: Game, player: Player, uiHandler: UIHandler): CardResult
         + canBeNoped(): boolean
         + endsTurn(): boolean
         + getDescription(): String
@@ -222,6 +227,8 @@ package "ui" {
         + startTurn(): void
         + endGame(): void
         + checkIfGameOver(): boolean
+        + promptForInsertionIndex(maxIndex: int): int
+        + displayMessage(message: String): void
     }
 
     class Main {
@@ -229,6 +236,7 @@ package "ui" {
     }
 }
 
+' Original domain relationships
 Card --> CardType
 CardType ..> GameType
 Deck --> GameType
@@ -242,21 +250,26 @@ Game ..> CardType
 Player --> Card
 Player ..> Instantiator
 Player ..> CardType
+Instantiator ..> Card
+Instantiator ..> CardType
+
+' UI depends on Domain (correct direction)
 GameUI --> Game
+GameUI ..|> UIHandler : implements
 Main ..> Game
 Main ..> GameUI
 Main ..> Deck
 Main ..> Player
 Main ..> Instantiator
-Instantiator ..> Card
-Instantiator ..> CardType
 
+' Strategy Pattern relationships
 ShuffleBehavior ..|> CardBehavior
 NopeBehavior ..|> CardBehavior
 ExplodingKittenBehavior ..|> CardBehavior
 DefuseBehavior ..|> CardBehavior
 
 CardBehavior ..> CardResult
+CardBehavior ..> UIHandler : uses
 CardBehaviorFactory ..> CardBehavior
 CardBehaviorFactory ..> CardType
 CardBehaviorFactory ..> ShuffleBehavior : creates
